@@ -1,0 +1,168 @@
+---
+subtitle: "in Food and Beverages Manufacturing"
+title: "Transporter Schedulling and Routing Problem"
+author: "Ikang Fadhli"
+institute: Nutrifood Indonesia
+title-slide-attributes:
+  data-background-image: cover.png
+  data-background-size: cover
+  data-background-opacity: "0.4"
+format: 
+  revealjs:
+    theme: simple
+    slide-number: true
+    footer: "find me at: ikanx101.com"
+    incremental: false
+    show-slide-number: all
+    transition: convex
+    width: 1920
+    height: 1080
+    highlight-style: arrow-dark
+    output-location: column
+    code-overflow: scroll
+    scrollable: true
+    fig-dpi: 650
+    fig-format: png
+    fig-align: center
+editor: source
+execute: 
+  echo: false
+  warning: false
+  message: false
+---
+
+# PENDAHULUAN {background-image="latar.png" background-opacity=".75"}
+
+::: notes
+Setiap hari, tim **DTA** membuat rute untuk *transporter*
+mendistribusikan produk jadi ke konsumen-konsumen **PT XYZ** yang telah
+melakukan *order*. Proses ini masih dilakukan secara manual. Akibatnya
+proses ini memakan waktu yang cukup lama dan tidak ada kejaminan bahwa
+rute yang dipilih sudah optimal atau belum. Oleh karena itu, tim **DTA**
+berusaha untuk membuat model optimisasi dari permasalahan ini.
+:::
+
+## Tujuan {.center}
+
+Membuat model optimisasi rute *transporter* yang meminimalkan *total cost*, yakni dengan membuat konfigurasi:
+
+> **Order _Customer_ mana yang harus dikirim pada tanggal berapa dan menggunakan armada apa. Lalu tentukan urutan pengirimannya!**
+
+
+# *Business Process* {background-image="armada.png" background-opacity=".75"}
+
+::: notes
+Untuk mengirimkan produk jadi dari Gudang Ciawi dan Cibitung, tim DTA
+menyewa *transporter* dengan berbagai jenis armada kendaraan.
+Masing-masing kendaraan tersebut memiliki spesifikasi yang berbeda-beda,
+seperti:
+
+1.  Kapasitas maksimal kubikasi yang bisa diangkut,
+2.  Kapasitas maksimal tonase yang bisa diangkut,
+3.  Biaya sewa (per km). Diasumsikan biaya sewa ini nilainya tetap
+    (tidak dipengaruhi oleh faktor lain seperti *habit* supir dan
+    perbedaan rute yang ditempuh), dan
+4.  *Loading time*.
+
+Masing-masing armada tersebut juga memiliki keterbatasan dari segi
+jumlah armada yang bisa disewa dan berapa banyak titik konsumen yang
+bisa dilalui.
+:::
+
+## *Purchase Order* {.smaller .center}
+
+Konsumen memesan (melalui proses *purchase order* - PO) sejumlah produk
+jadi kepada **PT XYZ**. Pada PO tersebut, kita memiliki informasi
+sebagai berikut:
+
+1.  Berapa total kubik dan tonase produk yang harus dikirim.
+2.  *Range* tanggal pengiriman produk.
+
+**PT XYZ** harus memenuhi pembelian tersebut secara langsung (tidak
+boleh memecah pengiriman produk dalam satu PO menjadi beberapa kali
+pengiriman). Masing-masing konsumen akan dilayani oleh gudang Ciawi atau
+Cibitung sesuai dengan pembagian yang telah ditetapkan sebelumnya. Tidak
+ada konsumen yang dilayani oleh keduanya.
+
+# Batasan Armada di Konsumen {background-image="retail.png" background-opacity=".75"}
+
+::: notes
+Masing-masing konsumen memiliki keterbatas lain terkait armada yang bisa
+dilalui karena lokasi mereka berbeda-beda. Ada konsumen yang berlokasi
+di jalan besar sehingga armada ukuran besar bisa melewatinya dengan
+aman. Namun ada beberapa konsumen yang lokasinya hanya bisa dilalui oleh
+armada kecil.
+:::
+
+```{r}
+rm(list=ls())
+
+library(dplyr)
+library(tidyr)
+
+load("ready.rda")
+```
+
+# Data yang Digunakan {background-image="dash.png" background-opacity=".75"}
+
+## Sampel Data Terkait Order Customer
+
+```{r,echo=FALSE}
+df_sales_order_ready_2 %>% 
+  mutate(tanggal_kirim_min = tanggal_minimal + tanggal_kirim_min - 1,
+         tanggal_kirim_max = tanggal_minimal + tanggal_kirim_max - 1) %>% 
+  rename(order_kg = order_tonase) %>% 
+  head(10) %>% 
+  knitr::kable()
+```
+
+
+## Sampel Data Informasi Detail Customer
+
+```{r,echo=FALSE}
+df_cust_complete_ready %>% 
+  head(10) %>% 
+  knitr::kable()
+```
+
+
+## Data Gudang
+
+```{r,echo=FALSE}
+df_gudang %>% knitr::kable()
+```
+
+## Data Armada
+
+```{r,echo=FALSE}
+df_armada %>% 
+  mutate(jenis_armada = c("Carry","CDE","CDD","CDD Jumbo","FUSO","TRONTON",
+                          "BU","CONT 20","CONT 40")) %>% 
+  rename(max_cap_kg = max_cap_tonase) %>% 
+  relocate(jenis_armada,.before = max_cap_kubikasi) %>%  
+  knitr::kable()
+```
+
+
+# Tujuan Optimisasi
+
+## _Decision Variables_ {.center}
+
+Model optimisasi ini menghasilkan dua _decision variables_, yakni:
+
+1. Tanggal kirim,
+1. Armada yang digunakan, dan
+1. Urutan pengiriman.
+
+Untuk masing-masing _customer sales order_.
+
+## _Objective Function_ {.center}
+
+Fungsi objektif pada model ini adalah:
+
+> Meminimumkan total biaya yang timbul dari setiap keputusan _customer_ $i$ yang dikirim dengan armada $j$ pada tanggal $k$ tanpa melanggar _constraints_ yang ada.
+
+
+# End of Slides
+
+

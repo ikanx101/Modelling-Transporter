@@ -1,0 +1,4 @@
+- source: present.qmd
+  quarto-pub:
+    - id: dcf32f3b-e92e-43f7-90e0-2a8bb427dd77
+      url: https://ikanx101.quarto.pub/matmodel2026
