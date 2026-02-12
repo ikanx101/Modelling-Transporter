@@ -1,7 +1,7 @@
 # Modelling Transporter
 
 
-*Repository* untuk permasalahan optimisasi *vehicle routing*.
+*Repository* untuk permasalahan optimisasi *vehicle routing problem*.
 
 # PENDAHULUAN
 
@@ -19,8 +19,8 @@ berusaha untuk membuat model optimisasi dari permasalahan ini.
 Membuat model optimisasi rute *transporter* yang meminimalkan *total
 cost*, yakni dengan membuat konfigurasi:
 
-> **Order Customer mana yang harus dikirim pada tanggal berapa dan
-> menggunakan armada apa.**
+> **Order _Customer_ mana yang harus dikirim pada tanggal berapa dan
+> menggunakan armada apa. Lalu tentukan urutan pengirimannya!**
 
 ## Ruang Lingkup
 
@@ -67,6 +67,10 @@ armada kecil.
 # DATA TERKAIT
 
 Berikut adalah data-data yang sudah dilakukan *pre-processing*:
+
+## Titik Awal
+
+Titik awal pengiriman: Ciawi di -6.649724, 106.843370.
 
 ## Sampel Data Terkait Order Customer
 
