@@ -149,8 +149,9 @@ Titik awal pengiriman: Ciawi di -6.649724, 106.843370.
 
 Model optimisasi ini menghasilkan dua *decision variables*, yakni:
 
-1.  Tanggal kirim, dan
-2.  Armada yang digunakan.
+1.  Tanggal kirim, 
+2.  Armada yang digunakan, dan
+3.  Urutan pengiriman.
 
 Untuk masing-masing *customer sales order*.
 
