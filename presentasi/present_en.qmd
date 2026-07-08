@@ -133,7 +133,6 @@ rm(list=ls())
 library(dplyr)
 library(tidyr)
 
-load("ready.rda")
 ```
 
 # Data Used {background-image="dash.png" background-opacity=".75"}
@@ -147,10 +146,8 @@ fleet data.
 ## Sample Data of Customer Orders
 
 ```{r,echo=FALSE}
+df_sales_order_ready_2 = read.csv("~/Modelling-Transporter/raw data/data_sales_order.csv") %>% janitor::clean_names()
 df_sales_order_ready_2 %>%
-  mutate(tanggal_kirim_min = tanggal_minimal + tanggal_kirim_min - 1,
-         tanggal_kirim_max = tanggal_minimal + tanggal_kirim_max - 1) %>%
-  rename(order_kg = order_tonase) %>%
   head(10) %>%
   knitr::kable()
 ```
@@ -170,6 +167,7 @@ window for the delivery.
 ## Sample Data of Customer Details
 
 ```{r,echo=FALSE}
+df_cust_complete_ready = read.csv("~/Modelling-Transporter/raw data/data_detail_customer_jabodetabek.csv")
 df_cust_complete_ready %>%
   head(10) %>%
   knitr::kable()
@@ -189,6 +187,7 @@ before.
 ## Warehouse Data
 
 ```{r,echo=FALSE}
+df_gudang = read.csv("~/Modelling-Transporter/raw data/data_gudang.csv")
 df_gudang %>% knitr::kable()
 ```
 
@@ -203,11 +202,9 @@ warehouses.
 ## Fleet Data
 
 ```{r,echo=FALSE}
+df_armada = read.csv("~/Modelling-Transporter/raw data/data_armada.csv")
+
 df_armada %>%
-  mutate(jenis_armada = c("Carry","CDE","CDD","CDD Jumbo","FUSO","TRONTON",
-                          "BU","CONT 20","CONT 40")) %>%
-  rename(max_cap_kg = max_cap_tonase) %>%
-  relocate(jenis_armada,.before = max_cap_kubikasi) %>%
   knitr::kable()
 ```
 
