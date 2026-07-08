@@ -1,0 +1,279 @@
+---
+subtitle: "in Food and Beverages Manufacturing"
+title: "Transporter Schedulling and Routing Problem"
+author: "Ikang Fadhli"
+institute: Nutrifood Indonesia
+title-slide-attributes:
+  data-background-image: cover.png
+  data-background-size: cover
+  data-background-opacity: "0.4"
+format:
+  revealjs:
+    theme: simple
+    slide-number: true
+    footer: "find me at: ikanx101.com"
+    incremental: false
+    show-slide-number: all
+    transition: convex
+    width: 1920
+    height: 1080
+    highlight-style: arrow-dark
+    output-location: column
+    code-overflow: scroll
+    scrollable: true
+    fig-dpi: 650
+    fig-format: png
+    fig-align: center
+editor: source
+execute:
+  echo: false
+  warning: false
+  message: false
+---
+
+# INTRODUCTION {background-image="latar.png" background-opacity=".75"}
+
+::: notes
+Good morning everyone. Let me start with the background of this project.
+
+Every day, the DTA team creates delivery routes for transporters. These
+transporters deliver finished products to the customers of PT XYZ who
+have placed orders.
+
+Right now, this process is still done manually. Because of that, it
+takes a long time, and we are never sure if the routes are really the
+best ones.
+
+So, the DTA team wants to build an optimization model to solve this
+problem.
+:::
+
+## Objective {.center}
+
+::: notes
+This slide shows the goal of the project.
+
+Our goal is to build an optimization model that finds the best routes
+for the transporters, with the lowest total cost.
+
+The model needs to answer three simple questions. First, which customer
+order should we deliver? Second, on which date? And third, which
+vehicle should we use? After that, the model also decides the order of
+the deliveries.
+:::
+
+Build a *transporter* routing optimization model that minimizes *total cost*, by creating a configuration of:
+
+> **Which _Customer_ orders should be delivered on which date and using which fleet. Then determine the delivery sequence!**
+
+
+# *Business Process* {background-image="armada.png" background-opacity=".75"}
+
+::: notes
+Now, let me explain the business process.
+
+We deliver products from two warehouses: Ciawi and Cibitung. To do
+this, the DTA team rents transporters with many types of vehicles.
+
+Each vehicle type is different. It has a maximum volume it can carry,
+a maximum weight it can carry, a rental cost per kilometer, and a
+loading time. For this model, we assume the rental cost is fixed. It
+does not change because of the driver or the route.
+
+Also, each vehicle type has limits. We can only rent a certain number
+of vehicles, and each vehicle can only visit a certain number of
+customers in one trip.
+:::
+
+## *Purchase Order* {.smaller .center}
+
+Customers order (through a *purchase order* - PO process) a number of
+finished products from **PT XYZ**. From the PO, we have the following
+information:
+
+1.  The total cubic volume and tonnage of products to be delivered.
+2.  The delivery date *range* of the products.
+
+**PT XYZ** must fulfill the purchase directly (splitting the delivery
+of products in one PO into several deliveries is not allowed). Each
+customer will be served by either the Ciawi or Cibitung warehouse
+according to a predetermined allocation. No customer is served by
+both.
+
+::: notes
+This slide is about the purchase order, or PO.
+
+Customers order products from PT XYZ through a purchase order. From
+each PO, we know two things: how much volume and weight we need to
+deliver, and the range of dates when we can deliver it.
+
+There are two important rules here. First, one PO must be delivered in
+one trip. We cannot split it into several deliveries. Second, each
+customer is served by only one warehouse, either Ciawi or Cibitung.
+This is already decided before, so no customer is served by both.
+:::
+
+# Fleet Restrictions at Customers {background-image="retail.png" background-opacity=".75"}
+
+::: notes
+Next, there is one more restriction, and it comes from the customer
+side.
+
+Not all vehicles can reach all customers. Some customers are located
+on big roads, so large trucks can go there safely. But some customers
+are in small streets, so only small vehicles can reach them.
+
+So, the model must also respect this rule when it chooses a vehicle
+for each customer.
+:::
+
+```{r}
+rm(list=ls())
+
+library(dplyr)
+library(tidyr)
+
+load("ready.rda")
+```
+
+# Data Used {background-image="dash.png" background-opacity=".75"}
+
+::: notes
+Now, let me show you the data that we use in this model. There are
+four datasets: customer orders, customer details, warehouse data, and
+fleet data.
+:::
+
+## Sample Data of Customer Orders
+
+```{r,echo=FALSE}
+df_sales_order_ready_2 %>%
+  mutate(tanggal_kirim_min = tanggal_minimal + tanggal_kirim_min - 1,
+         tanggal_kirim_max = tanggal_minimal + tanggal_kirim_max - 1) %>%
+  rename(order_kg = order_tonase) %>%
+  head(10) %>%
+  knitr::kable()
+```
+
+::: notes
+This is a sample of the customer order data.
+
+Each row is one order from one customer. You can see the order size in
+cubic meters and in kilograms. You can also see the earliest and the
+latest delivery dates for each order.
+
+So from this table, the model knows how much to deliver and the time
+window for the delivery.
+:::
+
+
+## Sample Data of Customer Details
+
+```{r,echo=FALSE}
+df_cust_complete_ready %>%
+  head(10) %>%
+  knitr::kable()
+```
+
+::: notes
+This is a sample of the customer detail data.
+
+For each customer, we know their location, which warehouse serves
+them, and the biggest vehicle that can reach their location.
+
+This data is important for the fleet restriction rule that I explained
+before.
+:::
+
+
+## Warehouse Data
+
+```{r,echo=FALSE}
+df_gudang %>% knitr::kable()
+```
+
+::: notes
+This is the warehouse data.
+
+We have two warehouses, Ciawi and Cibitung, and here we can see their
+locations. Every delivery route starts from one of these two
+warehouses.
+:::
+
+## Fleet Data
+
+```{r,echo=FALSE}
+df_armada %>%
+  mutate(jenis_armada = c("Carry","CDE","CDD","CDD Jumbo","FUSO","TRONTON",
+                          "BU","CONT 20","CONT 40")) %>%
+  rename(max_cap_kg = max_cap_tonase) %>%
+  relocate(jenis_armada,.before = max_cap_kubikasi) %>%
+  knitr::kable()
+```
+
+::: notes
+This is the fleet data.
+
+We have nine types of vehicles, from the smallest one, Carry, to the
+biggest one, the forty-feet container.
+
+For each type, you can see the maximum volume, the maximum weight, the
+rental cost per kilometer, and other limits. In general, bigger
+vehicles can carry more, but they are more expensive and cannot reach
+every customer.
+:::
+
+
+# Optimization Goal
+
+::: notes
+Now, let me explain the optimization model itself: what it decides,
+and what it tries to achieve.
+:::
+
+## _Decision Variables_ {.center}
+
+This optimization model produces the following _decision variables_:
+
+1. Delivery date,
+1. Fleet used, and
+1. Delivery sequence.
+
+For each _customer sales order_.
+
+::: notes
+These are the decision variables. In simple words, this is the output
+of the model.
+
+For every customer order, the model decides three things: the delivery
+date, the vehicle to use, and the sequence of the deliveries in each
+trip.
+:::
+
+## _Objective Function_ {.center}
+
+The objective function of this model is:
+
+> Minimize the total cost arising from every decision of _customer_ $i$ being delivered by fleet $j$ on date $k$ without violating the existing _constraints_.
+
+::: notes
+And this is the objective function.
+
+The model tries to minimize the total cost. Every decision has a cost:
+sending customer i, using vehicle j, on date k. The model picks the
+combination with the lowest total cost.
+
+Of course, it must follow all the rules we talked about before: the
+vehicle capacity, the delivery time window, and the fleet restrictions
+at each customer.
+:::
+
+
+# End of Slides
+
+::: notes
+That is the end of my presentation. Thank you very much for your
+attention. If you have any questions, I am happy to answer them.
+:::
+
+
