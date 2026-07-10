@@ -148,9 +148,9 @@ Ikang Fadhli
 <h1>INTRODUCTION</h1>
 <aside class="notes">
 <p>Good morning everyone. Let me start with the background of this project.</p>
-<p>Every day, the DTA team creates delivery routes for transporters. These transporters deliver finished products to the customers of PT XYZ who have placed orders.</p>
+<p>Every day, the Nutrifood Transporter Team creates delivery routes for transporters. These transporters deliver finished products from the Nutrifood warehouses to the customers who have placed orders.</p>
 <p>Right now, this process is still done manually. Because of that, it takes a long time, and we are never sure if the routes are really the best ones.</p>
-<p>So, the DTA team wants to build an optimization model to solve this problem.</p>
+<p>So, the Nutrifood Transporter Team wants to build an optimization model to solve this problem.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -190,9 +190,9 @@ Ikang Fadhli
 <h1><em>Business Process</em></h1>
 <aside class="notes">
 <p>Now, let me explain the business process.</p>
-<p>We deliver products from two warehouses: Ciawi and Cibitung. To do this, the DTA team rents transporters with many types of vehicles.</p>
-<p>Each vehicle type is different. It has a maximum volume it can carry, a maximum weight it can carry, a rental cost per kilometer, and a loading time. For this model, we assume the rental cost is fixed. It does not change because of the driver or the route.</p>
-<p>Also, each vehicle type has limits. We can only rent a certain number of vehicles, and each vehicle can only visit a certain number of customers in one trip.</p>
+<p>We deliver products from two warehouses: Ciawi and Cibitung. To do this, the Nutrifood Transporter Team rents transporters with many types of vehicles.</p>
+<p>Each vehicle type is different. It has a maximum volume it can carry, a maximum weight it can carry, a rental cost per kilometer, and a loading time. For this model, we assume the cost is a fixed price per kilometer for every vehicle that we deploy. It does not change because of the driver or the route.</p>
+<p>We also assume that the number of vehicles is unlimited. So the model can use as many vehicles as it needs. The only limit is that each vehicle can only visit a certain number of customers in one trip.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -676,7 +676,8 @@ Ikang Fadhli
 <aside class="notes">
 <p>This is the fleet data.</p>
 <p>We have nine types of vehicles, from the smallest one, Carry, to the biggest one, the forty-feet container.</p>
-<p>For each type, you can see the maximum volume, the maximum weight, the rental cost per kilometer, and other limits. In general, bigger vehicles can carry more, but they are more expensive and cannot reach every customer.</p>
+<p>For each type, you can see the maximum volume, the maximum weight, and the fixed rental cost per kilometer. In general, bigger vehicles can carry more, but they are more expensive and cannot reach every customer.</p>
+<p>One important note: we assume the number of vehicles is unlimited. So the model is free to deploy as many vehicles of any type as it needs. The cost is what controls the decision, not the availability of the fleet.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
